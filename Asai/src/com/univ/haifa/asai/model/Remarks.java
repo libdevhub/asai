@@ -17,7 +17,9 @@ public class Remarks extends GenericField {
 	 public ArrayList<String> getSubFieldValue() {
 		 ArrayList<String> values = new ArrayList<String>();
 		 for (Entry e : entries) {
-			 values.add(e.lines.get(0).textValue);
+			 for(Line l : e.lines) {
+				values.add(l.textValue);
+			 }
 		 }
 		 return values;
 	 }
