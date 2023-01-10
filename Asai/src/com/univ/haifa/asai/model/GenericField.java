@@ -30,5 +30,7 @@ public abstract class GenericField {
 	}
 	public abstract ArrayList<String> getSubFieldValue();
 	public abstract String getSubFieldLangValue();
+	public abstract ArrayList<String> getRelatedFieldValue(); //Related only for complex fields
+	public abstract ArrayList<String> getSubFieldValueAsRelated();//Related only for complex fields
 	
 }

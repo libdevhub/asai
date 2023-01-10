@@ -33,4 +33,16 @@ public class Compqualitytime extends GenericField {
 		 return langCode;
 		 //return entries.get(0).lines.get(0).langCode;
 	}
+
+	@Override
+	public ArrayList<String> getRelatedFieldValue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ArrayList<String> getSubFieldValueAsRelated() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -44,6 +45,7 @@ import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.ControlFieldImpl;
 import org.marc4j.marc.impl.DataFieldImpl;
@@ -347,31 +349,16 @@ public class Asai {
 		      //File file = File.createTempFile("C:\\\\Users\\\\ajacobsmo\\\\Desktop\\\\asai\\\\asai_out\\\\bib3_" + index, null);
 		      File file = File.createTempFile("/home/adi/asai/temp/asai_out/bib3_"+ index, null);
 		      fos = new FileOutputStream(file);
-//		      fd = fos.getFD();
-//		      String prefix = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-//		      		+ "<OAI-PMH xmlns=\"http://www.openarchives.org/OAI/2.0/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd\">\r\n"
-//		      		+ "	<ListRecords>\r\n"
-//		      		+ "		<record>\r\n"
-//		      		+ "			<header>\r\n"
-//		      		+ "				<identifier>aleph-publish:000003834</identifier>\r\n"
-//		      		+ "			</header>\r\n"
-//		      		+ "			<metadata>"
-//		      		+ "				";
-//		      byte[] array = prefix.getBytes();
-//		      fos.write(array);
 		      writer = new MarcXmlWriter(fos, true);
 		      MarcFactory factory = MarcFactory.newInstance();
 		      Record marcXmlRecord = factory.newRecord("00000nam a2200000 i 4500");
-//		      Record marcXmlRecord = new RecordImpl();
 		      Date date = new Date();
 		      SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd");
-		      //ControlFieldImpl controllField = new ControlFieldImpl("008", "s1971 is s ||| | heb d");
 		      ControlFieldImpl controllField = new ControlFieldImpl("008", formatter.format(date));
-//		      LeaderImpl leader = new LeaderImpl("00000nam a2200000 i 4500");
-//		      marcXmlRecord.setLeader(leader);
 		      marcXmlRecord.addVariableField(controllField);
 		      addAsaiConstantFields(marcXmlRecord);
 		      Field[] dataFields = data.getClass().getFields();
+		      HashMap<String, ComplexField.ComplexFieldData> complexFieldsHash = new HashMap<String, ComplexField.ComplexFieldData>();
 		      for(int i = 0; i < dataFields.length; i++) {
 		         //System.out.println("The field is: " + dataFields[i].getName());
 		         Field field = Model.class.getField(dataFields[i].getName());
@@ -380,35 +367,51 @@ public class Asai {
 			         f = (GenericField)field.get(data);
 		         }
 		         catch (Exception e) {
+		        	if(field.get(data) instanceof ComplexField) {
+			        	complexFieldsHash.putAll(((ComplexField)(field.get(data))).getCodeAndTextValues());
+			        }
 					continue;
-				}
+				 }
 		         //No such feild in model
 		         if (f == null) {
 		        	 continue;
 		         }
-		         ArrayList<String> subFieldDataTextValues = ((GenericField)(field.get(data))).getSubFieldValue();
+		         //ArrayList<String> subFieldDataTextValues = ((GenericField)(field.get(data))).getSubFieldValue();
+		         //In complex field get the ids instead of values because of wrong issue in the order of keysoft else take the textvalue
+		         ArrayList<String> subFieldDataTextValues = ((GenericField)(field.get(data))).getSubFieldValueAsRelated() != null ? ((GenericField)(field.get(data))).getSubFieldValueAsRelated() : ((GenericField)(field.get(data))).getSubFieldValue();
 		         String[] subFieldValuesOriginal = f.SUB_FIELD_VALUES;
 		         for (String subFieldDataTextValue : subFieldDataTextValues) {
 			         String[] subFieldValues = subFieldValuesOriginal.clone();
-			         if (subFieldDataTextValue.contains("|")) {
-			        	 int counter = 0;
-			        	 for(String x : subFieldValues){
-		        		    if(x!=null && x.equals("|")){
-		        		    	counter++;
-		        		    }
+		        	 int counter = 0;
+		        	 for(String x : subFieldValues){
+	        		    if(x!=null && x.equals("|")){
+	        		    	counter++;
+	        		    }
+	        		 }
+		        	 if (counter >= 2) {
+		        		 counter = 1;
+		        		 String[] values = new String[2];
+		        		 if (subFieldDataTextValue.contains("|")) {
+		        			 values = subFieldDataTextValue.split(" \\| ");
 		        		 }
-			        	 if (counter >= 2) {
-			        		 counter = 1;
-			        		 String[] values = subFieldDataTextValue.split(" \\| ");
-			        		 for (int k=0; k<subFieldValues.length; k++) {
-			        			 if (subFieldValues[k].equals("|")) {
-				        			 subFieldValues[k] = counter == 1 ? subFieldValues[k].replace("|", values[1]) : subFieldValues[k].replace("|", values[0]);
-				        			 counter++;
-			        			 }
-			        		 }
-		
-			        	 }
-			         }
+		        		 else {
+		        			 values[0] = subFieldDataTextValue;
+		        			 values[1] = "###";
+		        		 }
+		        		 for (int k=0; k<subFieldValues.length; k++) {
+		        			 if (subFieldValues[k].equals("|")) {
+		        				 //As Nir asked soga goes to c and zika goes to d 
+		        				 if("sogazikaf".equalsIgnoreCase(dataFields[i].getName())) {
+		        					 subFieldValues[k] = counter == 1 ? subFieldValues[k].replace("|", values[0]) : subFieldValues[k].replace("|", values[1]);
+		        				 }
+		        				 else {
+		        					 subFieldValues[k] = counter == 1 ? subFieldValues[k].replace("|", values[1]) : subFieldValues[k].replace("|", values[0]);
+		        				 }
+			        			 counter++;
+		        			 }
+		        		 }
+
+		        	 }
 			         DataFieldImpl marcXmlDataField = new DataFieldImpl(f.TAG, f.IND1, f.IND2);
 			         for (int j=0; j<subFieldValues.length; j++) {
 			        	 String value = subFieldValues[j] != null ? subFieldValues[j] : f.SUB_FIELD_CODE[j] != '9' ? subFieldDataTextValue : ((GenericField)(field.get(data))).getSubFieldLangValue();
@@ -418,7 +421,6 @@ public class Asai {
 			         }
 			         marcXmlRecord.addVariableField(marcXmlDataField);
 		         }
-
 		      }
 		      
 		      //Fixes manually!
@@ -454,6 +456,48 @@ public class Asai {
 		      }
 		      
 		      List<VariableField> allRelationDFInRecord = marcXmlRecord.getVariableFields("690");
+		      for (VariableField vf : allRelationDFInRecord) {
+		    	  DataField df = (DataField)vf;
+		    	  if(df.getSubfields().size() < 2) { //The only place where 690 has only one subfield is with compplant so ignore this case and continue
+		    		  continue;
+		    	  }
+		    	  Subfield sf1 = df.getSubfields().get(0);
+		    	  Subfield sf2 = df.getSubfields().get(1);
+		    	  ComplexField.ComplexFieldData complexFieldValue1 = complexFieldsHash.get(sf1.getData());
+		    	  ComplexField.ComplexFieldData complexFieldValue2 = complexFieldsHash.get(sf2.getData());
+		    	  if(complexFieldValue1!=null && complexFieldValue2!=null) {
+		    		  if(complexFieldValue1.type == ComplexField.TYPE_FIELD && complexFieldValue2.type == ComplexField.VALUE_FIELD) {
+		    			  sf1.setData(complexFieldValue1.value);
+		    			  sf2.setData(complexFieldValue2.value);
+		    		  }
+		    		  else if(complexFieldValue1.type == ComplexField.VALUE_FIELD && complexFieldValue2.type == ComplexField.TYPE_FIELD) {
+		    			  sf1.setData(complexFieldValue2.value);
+		    			  sf2.setData(complexFieldValue1.value);
+		    		  }
+		    		  else {
+		    			  System.out.println("Something wrong with data field 690" + " and subfield: " + sf1.getCode() + " value: " + sf1.getData() + " and subfield: " + sf2.getCode() + " value " + sf2.getData());
+		    		  }
+		    	  }
+		    	  else if(complexFieldValue1!=null && complexFieldValue2==null) {
+		    		  if(complexFieldValue1.type == ComplexField.TYPE_FIELD) {
+		    			  sf1.setData(complexFieldValue1.value);
+		    		  }
+		    		  else if(complexFieldValue1.type == ComplexField.VALUE_FIELD) {
+		    			  sf1.setData(sf2.getData());
+		    			  sf2.setData(complexFieldValue1.value);
+		    		  }
+		    	  }
+		    	  else if(complexFieldValue1==null && complexFieldValue2!=null) {
+		    		  if(complexFieldValue2.type == ComplexField.VALUE_FIELD) {
+		    			  sf2.setData(complexFieldValue2.value);
+		    		  }
+		    		  else if(complexFieldValue2.type == ComplexField.TYPE_FIELD) {
+		    			  sf2.setData(sf1.getData());
+		    			  sf1.setData(complexFieldValue2.value);
+		    		  }
+		    	  }
+		    	  
+		      }
 		      Collections.sort(allRelationDFInRecord, new Comparator<VariableField>() {
 		    	  @Override
 		    	  public int compare(VariableField vf1, VariableField vf2) {

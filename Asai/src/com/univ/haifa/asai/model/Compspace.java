@@ -1,11 +1,7 @@
 package com.univ.haifa.asai.model;
 
-import java.util.ArrayList;
-
-
-public class Compspace {
-	 public String type;
-	 public int order;
-	 public String fieldCode;
-	 public ArrayList<Entry> entries;
+public class Compspace extends ComplexField{
+	public Compspace() {
+		super(ComplexField.TYPE_FIELD);
+	}
 }

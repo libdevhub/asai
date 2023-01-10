@@ -13,18 +13,19 @@ public class Model {
     public Compcharacterunonym compcharacterunonym;
     public Compcharacterunonymf compcharacterunonymf;
     public Comphistorictime comphistorictime;
-    public Compobjectname compobjectname;
+	public Compobjectname compobjectname;
     public Compobject compobject;
     public Compobjectf compobjectf;
     public Compplant compplant;
-    public Compshortgenrename compshortgenrename;
+	public Compshortgenrename compshortgenrename;
     public Compshortgenre compshortgenre;
     public Compshortgenref compshortgenref;
     public Fence fence;
+    public Zika zika;
     public Sogazikaf sogazikaf;
     public Compqualitytime compqualitytime;
+    public StoryWriterLink storywriterlink;
     public Storyattype storyattype;
-	public StoryWriterLink storywriterlink;
 	public Tellerlink tellerlink;
     public Compspacename compspacename;
     public Remarks remarks;
@@ -36,7 +37,11 @@ public class Model {
     public Year year;
     public Makbilot makbilot;
     public Relations relations;
-    public Model() {
+    public Comptransformation comptransformation;
+	public Comptransformationname comptransformationname;
+    public Compcharacterknown compcharacterknown;
+    public Compcharacterknownname compcharacterknownname;
+	public Model() {
 		// TODO Auto-generated constructor stub
 	}
     public Title getTitle() {
@@ -135,6 +140,12 @@ public class Model {
 	public void setFence(Fence fence) {
 		this.fence = fence;
 	}
+	public Zika getZika() {
+		return zika;
+	}
+	public void setZika(Zika zika) {
+		this.zika = zika;
+	}
 	public Sogazikaf getSogazikaf() {
 		return sogazikaf;
 	}
@@ -189,17 +200,17 @@ public class Model {
 	public void setComponentf(Componentf componentf) {
 		this.componentf = componentf;
 	}
-	public Transformationf getTransformationf() {
-		return transformationf;
-	}
-	public void setTransformationf(Transformationf transformationf) {
-		this.transformationf = transformationf;
-	}
 	public StoryWriterLink getStorywriterlink() {
 		return storywriterlink;
 	}
 	public void setStorywriterlink(StoryWriterLink storywriterlink) {
 		this.storywriterlink = storywriterlink;
+	}
+	public Transformationf getTransformationf() {
+		return transformationf;
+	}
+	public void setTransformationf(Transformationf transformationf) {
+		this.transformationf = transformationf;
 	}
 	public Storyattype getStoryattype() {
 		return storyattype;
@@ -248,6 +259,30 @@ public class Model {
 	}
 	public void setTranslation(Translation translation) {
 		this.translation = translation;
+	}
+	public Comptransformation getComptransformation() {
+		return comptransformation;
+	}
+	public void setComptransformation(Comptransformation comptransformation) {
+		this.comptransformation = comptransformation;
+	}
+	public Comptransformationname getComptransformationname() {
+		return comptransformationname;
+	}
+	public void setComptransformationname(Comptransformationname comptransformationname) {
+		this.comptransformationname = comptransformationname;
+	}
+	public Compcharacterknown getCompcharacterknown() {
+		return compcharacterknown;
+	}
+	public void setCompcharacterknown(Compcharacterknown compcharacterknown) {
+		this.compcharacterknown = compcharacterknown;
+	}
+	public Compcharacterknownname getCompcharacterknownname() {
+		return compcharacterknownname;
+	}
+	public void setCompcharacterknownname(Compcharacterknownname compcharacterknownname) {
+		this.compcharacterknownname = compcharacterknownname;
 	}
 	public Compspace compspace;
     public Compspacef compspacef;
